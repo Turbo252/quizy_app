@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -26,6 +28,22 @@
         <!-- Экран викторины (добавлено) -->
         <activity
             android:name=".QuizActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ResultActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".StatsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".RulesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".AuthorsActivity"
             android:exported="false" />
 
     </application>
