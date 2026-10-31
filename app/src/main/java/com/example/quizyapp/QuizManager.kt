@@ -6,7 +6,7 @@ data class Question(
     val text: String,
     val options: List<String>,
     val correctIndex: Int // 0..3
-)
+) : java.io.Serializable
 
 data class GameStats(
     val totalQuestions: Int,

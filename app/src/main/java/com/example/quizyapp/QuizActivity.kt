@@ -78,6 +78,24 @@ class QuizActivity : AppCompatActivity() {
             showExitConfirmationDialog()
         }
 
+        if (savedInstanceState != null) {
+            val savedQuestions = savedInstanceState.getSerializable("currentQuestions") as? java.util.ArrayList<Question>
+            if (savedQuestions != null && savedQuestions.isNotEmpty()) {
+                currentQuestions = savedQuestions
+                currentIndex = savedInstanceState.getInt("currentIndex", 0)
+                correctAnswersCount = savedInstanceState.getInt("correctAnswersCount", 0)
+                gameStartTimeMs = savedInstanceState.getLong("gameStartTimeMs", 0L)
+                
+                groupQuiz.visibility = View.VISIBLE
+                progressBar.visibility = View.GONE
+                chronometer.base = savedInstanceState.getLong("chronometerBase", SystemClock.elapsedRealtime())
+                chronometer.start()
+                
+                showQuestion()
+                return
+            }
+        }
+
         val difficulty = QuizSessionManager.selectedDifficulty
         if (!QuizSessionManager.hasQuestionsForDifficulty(difficulty)) {
             loadQuestionsFromGoogleSheets(difficulty)
@@ -179,6 +197,9 @@ class QuizActivity : AppCompatActivity() {
             return
         }
 
+        btnTheme.isEnabled = true
+        btnExitGame.isEnabled = true
+
         val question = currentQuestions[currentIndex]
         val globalIndex = QuizSessionManager.seriesQuestions + currentIndex + 1
         val globalTotal = QuizSessionManager.seriesQuestions + currentQuestions.size
@@ -206,6 +227,9 @@ class QuizActivity : AppCompatActivity() {
             correctAnswersCount++
         }
 
+        btnTheme.isEnabled = false
+        btnExitGame.isEnabled = false
+
         buttons.forEachIndexed { index, button ->
             button.isEnabled = false
             if (index == question.correctIndex) {
@@ -221,6 +245,7 @@ class QuizActivity : AppCompatActivity() {
         chronometer.stop()
 
         Handler(Looper.getMainLooper()).postDelayed({
+            if (isDestroyed) return@postDelayed
             // Возобновляем таймер
             val timeSpentPaused = SystemClock.elapsedRealtime() - realTimeAtPause
             gameStartTimeMs += timeSpentPaused // Исключаем эту 1 секунду из общей статистики
@@ -230,6 +255,17 @@ class QuizActivity : AppCompatActivity() {
             currentIndex++
             showQuestion()
         }, 1000)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (currentQuestions.isNotEmpty()) {
+            outState.putSerializable("currentQuestions", java.util.ArrayList(currentQuestions))
+            outState.putInt("currentIndex", currentIndex)
+            outState.putInt("correctAnswersCount", correctAnswersCount)
+            outState.putLong("gameStartTimeMs", gameStartTimeMs)
+            outState.putLong("chronometerBase", chronometer.base)
+        }
     }
 
     private fun finishGame() {
